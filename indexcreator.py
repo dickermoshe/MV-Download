@@ -4,6 +4,7 @@ import sys
 import time
 import html
 class indexy():
+    
     def __init__(self):
         self.relogin == False
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
@@ -17,10 +18,11 @@ class indexy():
         self.movieurl = self.strings['movieurl']
         self.tvurl = self.strings['tvurl']
         self.minwait=1
-        self.pagenum = {'m':pagesamount('m'),'t':pagesamount('t')}
+        self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
         if "Return" in self.pagenum['m'] or "Return" in self.pagenum['t'] or "Return" in [self.movieindex,self.tvindex]:
             self.relogin = True
+    
     def req(self,mot,page = None):
         st = time.time()
         if type(page) is not str and page != None:
@@ -55,9 +57,6 @@ class indexy():
             return "Relogin"
         return x.json()
         
-
-
-
     def pagesamount(self,mot):
         x = self.reqjson(mot)
         if x == "Relogin":
@@ -86,6 +85,7 @@ class indexy():
             for o in x:
                 index.append([html.unescape(o['title']),o['id']])
         return index
+    def _login
 
 
 
