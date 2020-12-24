@@ -12,7 +12,7 @@ class mvids():
         ##Set active directery to location of script##
         self._setCWD()
 
-        self.login()
+        self._login()
 
     
     
@@ -30,16 +30,32 @@ class mvids():
             self.relogin = True
     
     def login(self):
-        
-        self.user_id = 
-        self.token = 
-        response = requests.get
+        count = 0
+        while True:
+            try:
+                data = {'data': '{"Name":"mickrich345@gmail.com","Password":"7897412563"}'}
+                response = requests.post('https://mobilevids.org/webapi/user/login.php', data=data).json()
+                self.user_id = response['id']
+                self.token = response['auth_token']
+                break
+            except:
+                print('Failed to login. Try#'+str(count))
+                time.sleep(5)
+                count += 1
+                continue
+
     
+    def responsibleRequest(self,data):
+        st = time.time()
+        requests.get(data['url'], params=data['params'])
+        end = time.time()
+        if end - st < 2:
+            time.sleep(self.minwait-(end - st))
     
     
     def _setCWD(self):
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
-    
+
     
     
     def req(self,mot,page = []):
