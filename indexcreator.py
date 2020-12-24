@@ -5,6 +5,7 @@ import time
 import html
 class indexy():
     def __init__(self):
+        self.relogin == False
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
         try:
             with open('indexmakerstrings.txt','r') as n:
@@ -18,7 +19,8 @@ class indexy():
         self.minwait=1
         self.pagenum = {'m':pagesamount('m'),'t':pagesamount('t')}
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
-
+        if "Return" in self.pagenum['m'] or "Return" in self.pagenum['t'] or "Return" in [self.movieindex,self.tvindex]:
+            self.relogin = True
     def req(self,mot,page = None):
         st = time.time()
         if type(page) is not str and page != None:
@@ -50,7 +52,7 @@ class indexy():
             print(x.text,"\nCould not JSON.")
             sys.exit()
         if 'session missmatch' in y['reason']:
-            self.relogin()
+            return "Relogin"
         return x.json()
         
 
@@ -58,14 +60,18 @@ class indexy():
 
     def pagesamount(self,mot):
         x = self.reqjson(mot)
+        if x == "Relogin":
+            return x
         if 'total_pages' in x:
             return x['total_pages']
         else:
             print(c,"\nCould not get Page Amount.")
             sys.exit()
     def singleindex(self,mot,page= None):
-        self.reqjson(mot,page)
-        if 'itms' in x:
+        x = self.reqjson(mot,page)
+        if x == "Relogin":
+            return x 
+        if 'items' in x:
             return x['items']
         else:
             print(c,"\nCould not get items on page: ",page)
@@ -74,10 +80,13 @@ class indexy():
     def totalindex(self,mot):
         index = []
         for i in range(self.pagenum(mot)):
-            x = singleindex(self,mot,page = str(i+1))
+            x = self.singleindex(self,mot,page = str(i+1))
+            if x == "Relogin":
+                return x 
             for o in x:
                 index.append([html.unescape(o['title']),o['id']])
         return index
+
 
 
 
