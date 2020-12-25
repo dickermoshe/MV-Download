@@ -23,17 +23,16 @@ class mvids():
         self._setCWD()
         
         ##Set var self.user_id and self.token ##
-        self._login() 
+        self.login() 
         
-        
-
         ## Return length of pages
         self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
+        
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
         if "Return" in self.pagenum['m'] or "Return" in self.pagenum['t'] or "Return" in [self.movieindex,self.tvindex]:
             self.relogin = True
     
-    def _login(self):
+    def login(self):
         count = 0
         while True:
             try:
@@ -52,26 +51,33 @@ class mvids():
     def _setCWD(self):
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     def pagesamount(self,mot):
-        while True:
-        st = time.time()
-        if mot == 'm':
-            response = requests.get(self.movieurl, params=self.params)
-        elif mot == 't':
-            response = requests.get(self.tvurl, params=self.params)
+        x = 0
+        while x == 0:
+            x = 1
+            st = time.time()
+            if mot == 'm':
+                response = requests.get(self.movieurl, params=[['user_id',self.user_id],['token'],self.token])
+            elif mot == 't':
+                response = requests.get(self.tvurl, params=[['user_id',self.user_id],['token'],self.token])
+            else:
+                print(mot,"\nMust be 'm'ovie OR 't'v show.")
+                sys.exit()
+            end = time.time()
+            if end - st < self.wait['indexpage']:
+                time.sleep(self.wait['indexpage']-(end - st))
+            try:
+                y = response.json()
+            except:
+                print(response.text,"\nCould not JSON.")
+                sys.exit()
+            if 'session missmatch' in y['reason']:
+                self.login()
+                x = 0
+        if 'total_pages' in y:
+            return y['total_pages']
         else:
-            print(mot,"\nMust be 'm'ovie OR 't'v show.")
+            print(y,"\nCould not get Page Amount.")
             sys.exit()
-        end = time.time()
-        if end - st < self.wait['indexpage']:
-            time.sleep(self.wait['indexpage']-(end - st))
-        try:
-            y = response.json()
-        except:
-            print(response.text,"\nCould not JSON.")
-            sys.exit()
-        if 'session missmatch' in y['reason']:
-            return "Relogin"
-        return y
 
         
         
@@ -102,28 +108,9 @@ class mvids():
 
     
     
-    def indexRequest(self,mot,page = []):
-        st = time.time()
-        if type(page) is not str and page != None:
-            print('Page number must be passed as string')
-            sys.exit()
-        if mot == 'm':
-            if page == None:
-                response = requests.get(self.movieurl, params=self.params)
-            else:
-                response = requests.get(self.movieurl, params=self.params+['p',str(page)])
-        elif mot == 't':
-            if page == None:
-                response = requests.get(self.tvurl, params=self.params)
-            else:
-                response = requests.get(self.tvurl, params=self.params+['p',str(page)])
-        else:
-            print(mot,"\nMust be 'm'ovie OR 't'v show.")
-            sys.exit()
-        end = time.time()
-        if end - st < 2:
-            time.sleep(self.minwait-(end - st))
-        return response
+    def indexRequest(self,mot):
+        
+
     
     def reqjson(self,mot,page = None):
         x = self.req(mot,page=page)
@@ -158,12 +145,66 @@ class mvids():
     def totalindex(self,mot):
         index = []
         for i in range(self.pagenum(mot)):
+            x = 0
+            while x == 0:
+                x = 1
+                st = time.time()
+                if mot == 'm':
+                    response = requests.get(self.movieurl, params=[['user_id',self.user_id],['token',self.token],['p',str(i+1)]])
+                elif mot == 't':
+                    response = requests.get(self.tvurl, params=[['user_id',self.user_id],['token',self.token],['p',str(i+1)]])
+                else:
+                    print(mot,"\nMust be 'm'ovie OR 't'v show.")
+                    sys.exit()
+                end = time.time()
+                if end - st < self.wait['indexpage']:
+                    time.sleep(self.wait['indexpage']-(end - st))
+                try:
+                    y = response.json()
+                except:
+                    print(response.text,"\nCould not JSON.")
+                    sys.exit()
+                if 'session missmatch' in y['reason']:
+                    self.login()
+                    x = 0
+            if 'title' in y:
+                index = index + [[z['title'],z['id']] for z in y]
+            else:
+                print(y,"\nCould not get Page Amount.")
+                sys.exit()
+        return index
+
+
+
+
             x = self.singleindex(self,mot,page = str(i+1))
             if x == "Relogin":
                 return x 
             for o in x:
                 index.append([html.unescape(o['title']),o['id']])
         return index
+                st = time.time()
+        
+        if type(page) is not str and page != None:
+            print('Page number must be passed as string')
+            sys.exit()
+        if mot == 'm':
+            if page == None:
+                response = requests.get(self.movieurl, params=self.params)
+            else:
+                response = requests.get(self.movieurl, params=self.params+['p',str(page)])
+        elif mot == 't':
+            if page == None:
+                response = requests.get(self.tvurl, params=self.params)
+            else:
+                response = requests.get(self.tvurl, params=self.params+['p',str(page)])
+        else:
+            print(mot,"\nMust be 'm'ovie OR 't'v show.")
+            sys.exit()
+        end = time.time()
+        if end - st < 2:
+            time.sleep(self.minwait-(end - st))
+        return response
 
 
 
