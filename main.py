@@ -11,13 +11,14 @@ class mvids():
 
         ##URLs for indexing Movies and TV##
         self.indexMovieURL = 'https://mobilevids.org/webapi/videos/movies.php'
+        self.MovieScreenURL = 'https://mobilevids.org/webapi/videos/get_video.php'
         self.indexTvURL = 'https://mobilevids.org/webapi/videos/tvshows.php'
         self.loginURL = 'https://mobilevids.org/webapi/user/login.php'
         self.username = 'mickrich345@gmail.com'
         self.code = "7897412563"
         
         ##Set minimum execution times for different requests ##
-        self.wait = {'login':1,'pagesamount':1,'totalindex':0}
+        self.wait = {'login':1,'pagesamount':1,'totalindex':0,'moviepage':1}
         
         ##Set active directery to location of script ##
         self._setCWD()
@@ -67,7 +68,13 @@ class mvids():
 
         self.user_id = response['id']
         self.token = response['auth_token']
-
+    def moviepage(self,movieID):
+        params = [['id', movieID],['user_id',self.user_id],['token',self.token]] 
+        response = self.respCall(self.MovieScreenURL,'moviepage','get',params = params)
+        [[response.get('src_vip_hd'),response.get('src_vip_hd_1080p'),response.get('src_vip_sd'),response.get('src_free_sd')]]
+        print(response)
+        
+        return 
     def _setCWD(self):
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     
@@ -104,7 +111,7 @@ class mvids():
                 sys.exit()
         return index
 x = mvids()
-
+x.moviepage(str(input('enter number of movie')))
 
 
 
