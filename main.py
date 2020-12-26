@@ -12,12 +12,12 @@ class mvids():
         ##URLs for indexing Movies and TV##
         self.indexMovieURL = 'https://mobilevids.org/webapi/videos/movies.php'
         self.indexTvURL = 'https://mobilevids.org/webapi/videos/tvshows.php'
-        self.loginURL = 'https://mobilevids.org/webapi/videos/tvshows.php'
+        self.loginURL = 'https://mobilevids.org/webapi/user/login.php'
         self.username = 'mickrich345@gmail.com'
         self.code = "7897412563"
         
         ##Set minimum execution times for different requests ##
-        self.wait = {'login':1,'pagesamount':1,'totalindex':1}
+        self.wait = {'login':1,'pagesamount':1,'totalindex':0}
         
         ##Set active directery to location of script ##
         self._setCWD()
@@ -52,17 +52,19 @@ class mvids():
             except:
                 print(response.text,"\nCould not JSON.")
                 sys.exit()
-            if 'session missmatch' in y['reason'] and master != 'login':
+            
+            if 'session missmatch' in str(y.get('reason')):
                 self.login()
                 x = 0
                 continue
         return y
 
     def login(self):
+
+
         data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
-        print(data)
         response = self.respCall(self.loginURL,'login','post',data = data)
-        print(response)
+
         self.user_id = response['id']
         self.token = response['auth_token']
 
@@ -70,7 +72,7 @@ class mvids():
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     
     def pagesamount(self,mot):
-
+        params=[['user_id',self.user_id],['token',self.token]]
         if mot == 'm':
             response = self.respCall(self.indexMovieURL,'pagesamount','get',params = params)
         elif mot == 't':
@@ -86,7 +88,7 @@ class mvids():
     
     def totalindex(self,mot):
         index = []
-        for i in range(1,self.pagenum(mot)+1):
+        for i in range(1,self.pagenum[mot]+1):
             params=[['user_id',self.user_id],['token',self.token],['p',str(i)]]
             if mot == 'm':
                 response = self.respCall(self.indexMovieURL,'totalindex','get',params = params)
@@ -95,8 +97,8 @@ class mvids():
             else:
                 print(mot,"\nMust be 'm'ovie OR 't'v show.")
                 sys.exit()
-            if 'title' in response:
-                index = index + [[html.unescape(z['title']),z['id']] for z in response]
+            if 'items' in response:
+                index = index + [[html.unescape(z['title']),z['id']] for z in response['items']]
             else:
                 print(response,"\nPage Details not found.")
                 sys.exit()
