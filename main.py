@@ -12,6 +12,7 @@ class mvids():
         self.test = True
         ##URLs for indexing Movies and TV##
         self.indexMovieURL = 'https://mobilevids.org/webapi/videos/movies.php'
+        self.ShowScreenURL='https://mobilevids.org/webapi/videos/get_season.php'
         self.MovieScreenURL = 'https://mobilevids.org/webapi/videos/get_video.php'
         self.indexTvURL = 'https://mobilevids.org/webapi/videos/tvshows.php'
         self.loginURL = 'https://mobilevids.org/webapi/user/login.php'
@@ -19,7 +20,7 @@ class mvids():
         self.code = "7897412563"
         
         ##Set minimum execution times for different requests ##
-        self.wait = {'login':1,'pagesamount':1,'totalindex':0,'moviepage':1}
+        self.wait = {'login':1,'pagesamount':1,'totalindex':0,'moviepage':1,'showpage':1}
         
         ##Set active directery to location of script ##
         self._setCWD()
@@ -70,6 +71,9 @@ class mvids():
         self.token = response['auth_token']
     def appendMovie(self,id,info):
         found = False
+        if 'Show not found' == str(info.get('reason')):
+            self.movieindex = self.totalindex('m')
+            return False
         while True:
             amount = len(self.movieindex)
             for i in range(amount):
@@ -82,18 +86,51 @@ class mvids():
             else:
                 self.movieindex = self.totalindex('m')
                 continue
+        return True
+    def appendShow(self,id,info):
+        found = False
+        print(info)
+        print(str(info.get('reason')))
+        if 'Show not found' == str(info.get('reason')):
+            self.tvindex = self.tvindex('t')
+            return False
+        while True:
+            amount = len(self.tvindex)
+            for i in range(amount):
+                if str(self.tvindex[i]['ID']) == str(id):
+                    found = True
+                    self.tvindex[i]['season_list'] = {info.get}
+                    break
+            if found == True:
+                break
+            else:
+                self.tvindex = self.totalindex('t')
+                continue
+        return True
 
             
 
 
+    def appendpage(self,mot,id):
+        twoX = False
+        while True :
+            params = [['id', id],['user_id',self.user_id],['token',self.token]] if mot =='m' else [['show_id', id],['user_id',self.user_id],['token',self.token]]
+            url = self.MovieScreenURL if mot =='m' else self.ShowScreenURL
+            response = self.respCall(url,'moviepage','get',params = params)
+            if mot == 'm':
+                x = self.appendMovie(id,response)
+            if mot == 't':
+                x = self.appendShow(id,response)
+            if x:
+                break
+            else:
+                print('Clould not find. Trying again.')
+                if twoX == True:
+                    print('Could Not Find')
+                    sys.exit()
+                twoX = True
+                continue   
 
-
-
-    def moviepage(self,movieID):
-        params = [['id', movieID],['user_id',self.user_id],['token',self.token]] 
-        response = self.respCall(self.MovieScreenURL,'moviepage','get',params = params)
-        self.appendMovie(movieID,response)
-    
     def _setCWD(self):
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     
@@ -132,11 +169,11 @@ class mvids():
         return index
 x = mvids()
 if x.test:
-    print(x.movieindex)
-z= str(input('enter number of movie'))
+    print(x.tvindex)
+z= str(input('enter number of tv show'))
 print(z,type(z))
-x.moviepage(z)
-print(x.movieindex)
+x.appendpage('t',z)
+print(x.tvindex)
 
 
 #response = requests.get('https://mobilevids.org/webapi/videos/tvshows.php', params=params)
