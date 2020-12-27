@@ -159,7 +159,6 @@ class mvids():
                 print('Not found Refreshing List...')
                 self.tvindex = self.totalindex('t')
         logging.debug(f"{id} is invalid")
-
     def appendShow(self,id):# Get Show Meta Data
         params = [['show_id', id],['user_id',self.user_id],['token',self.token]]
         url = self.MainShowURL
@@ -174,16 +173,57 @@ class mvids():
                 print('Not found Refreshing List...')
             self.tvindex = self.totalindex('t')
         logging.debug(f"{id} is invalid")
+    
     def printTV(self):#Print all TV Shows
         print("All TV shows:\n")
         for i in self.tvindex:
             print(i,' : ',self.tvindex[i])
-
     def printMovie(self):#Print all Movies
         print("All movies:\n")
         for i in self.movieindex:
             print(i,' : ',self.movieindex[i])
-    
+    def isMovieDown(self,id):
+        try:
+            x = self.movieindex[id]['src_free_sd']
+            return True
+        except:
+            return False
+    def isShowDown(self,id):
+        try:
+            x = self.tvindex[id]['season_list']
+            return True
+        except:
+            return False
+    def isSeasonDown(self,id,season):
+        try:
+            x = self.tvindex[id][season]
+            return True
+        except:
+            return False
+    def isEpisodeDown(self,id,season,ep):
+        try:
+            x = self.tvindex[id][season][ep]
+            return True
+        except:
+            return False
+    def getMovieURL(self,id):
+        if self.isMovieDown(id):
+            return (self.movieindex[id]['src_free_sd'],self.movieindex[id]['src_vip_sd'],self.movieindex[id]['src_vip_hd'],self.movieindex[id]['src_vip_hd_1080p'])
+        else:
+            logging.debug('Movie URL Unknown')
+            return False
+    def getEpisodeURL(self,id,season,ep):
+        if self.isEpisodeDown(id,season,ep):
+            return self.tvindex[id][season][ep]
+        else:
+            logging.debug('Episode URL Unknown')
+            return False
+    def getSeasonURL(self,id,season):
+        if self.isSeasonDown(id,season):
+            return [i for i in self.tvindex[id][season]]
+        else::
+            logging.debug('Episode URL Unknown')
+            return False
 
 
 x = mvids()
@@ -197,6 +237,7 @@ while True:
     x.printTV()
     x.appendEpisodes(input('id'),input('sea'))
     x.printTV()
+
 
         
 
