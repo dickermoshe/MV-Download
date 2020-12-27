@@ -73,8 +73,8 @@ class mvids():
         while True:
             amount = len(self.movieindex)
             for i in range(amount):
-                if self.movieindex[i]['ID'] == id:
-                    found == True
+                if str(self.movieindex[i]['ID']) == str(id):
+                    found = True
                     self.movieindex[i].update(info)
                     break
             if found == True:
@@ -91,15 +91,9 @@ class mvids():
 
     def moviepage(self,movieID):
         params = [['id', movieID],['user_id',self.user_id],['token',self.token]] 
-        print(params)
         response = self.respCall(self.MovieScreenURL,'moviepage','get',params = params)
-        print(params)
         self.appendMovie(movieID,response)
-        
-        
-        #[[response.get('src_vip_hd'),response.get('src_vip_hd_1080p'),response.get('src_vip_sd'),response.get('src_free_sd')]]
-        print(response)
-        return 
+    
     def _setCWD(self):
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     
@@ -139,7 +133,9 @@ class mvids():
 x = mvids()
 if x.test:
     print(x.movieindex)
-x.moviepage(str(input('enter number of movie')))
+z= str(input('enter number of movie'))
+print(z,type(z))
+x.moviepage(z)
 print(x.movieindex)
 
 
