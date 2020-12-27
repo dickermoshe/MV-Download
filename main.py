@@ -29,7 +29,6 @@ class mvids():
         self.login()
         ## Return length of pages
         self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
-        
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
         print(len(self.movieindex),len(self.tvindex))
 
@@ -49,12 +48,12 @@ class mvids():
             
             if end - st < self.wait[master]:
                 time.sleep(self.wait[master]-(end - st))
+
             try:
                 y = response.json()
             except:
                 print(response.text,"\nCould not JSON.")
                 sys.exit()
-            
             if 'session missmatch' in str(y.get('reason')):
                 self.login()
                 x = 0
@@ -71,7 +70,7 @@ class mvids():
         self.token = response['auth_token']
     def appendMovie(self,id,info):
         found = False
-        if 'Show not found' == str(info.get('reason')):
+        if 'not found' in str(info.get('reason')):
             self.movieindex = self.totalindex('m')
             return False
         while True:
@@ -89,10 +88,9 @@ class mvids():
         return True
     def appendShow(self,id,info):
         found = False
-        print(info)
-        print(str(info.get('reason')))
-        if 'Show not found' == str(info.get('reason')):
-            self.tvindex = self.tvindex('t')
+
+        if 'not found' in str(info.get('reason')):
+            self.tvindex = self.totalindex('t')
             return False
         while True:
             amount = len(self.tvindex)
