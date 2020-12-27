@@ -34,7 +34,15 @@ class mvids():
         self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
         print(len(self.movieindex),len(self.tvindex))
+    def _setCWD(self):#Set CWD to Script Location
+        os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
+    def login(self):#Login
 
+        data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
+        response = self.respCall(self.loginURL,'login','post',data = data)
+
+        self.user_id = response['id']
+        self.token = response['auth_token']
     def respCall(self,url,master,method,params = dict(a=None),data = dict(a=None)):#Call and ensure proper format
         failed = 1
         while True:
@@ -83,15 +91,6 @@ class mvids():
             else:
                 parseddata[i] = data.get(i)
         return parseddata
-    def login(self):#Login
-
-        data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
-        response = self.respCall(self.loginURL,'login','post',data = data)
-
-        self.user_id = response['id']
-        self.token = response['auth_token']
-    def _setCWD(self):#Set CWD to Script Location
-        os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
     def pagesamount(self,mot):#Get Amount OF pages
         params=[['user_id',self.user_id],['token',self.token]]
         if mot == 'm':
@@ -116,18 +115,18 @@ class mvids():
                 print(mot,"\nMust be 'm'ovie OR 't'v show.")
                 sys.exit()
 
-            index = index + [{'TITLE':html.unescape(z['title']),'ID':z['id']} for z in response['items']]
+            for q in response['items']:
+                index[q['id']] = {'TITLE':html.unescape(q['title'])}
 
         return index   
     def appendMovieIndex(self,id,info):#Add URLs to Movie
         while True:
-            amount = len(self.movieindex)
-            for i in range(amount):
-                if str(self.movieindex[i]['ID']) == str(id):
-                    self.movieindex[i].update(info)
-                    return
-            print('Not found Refreshing List...')
-            self.movieindex = self.totalindex('m')
+            try:
+                self.movieindex[id].update(info)
+                return
+            except:
+                print('Not found Refreshing List...')
+                self.movieindex = self.totalindex('m')
     def addMovie(self,id):#Get Movie URLs and Update
         params = [['id', id],['user_id',self.user_id],['token',self.token]]
         url = self.MovieScreenURL
@@ -136,17 +135,21 @@ class mvids():
         self.appendMovieIndex(id,x)
     def appendEpisodes(self,id,season,info):#Get URL for entire season
         while True:
-            amount = len(self.tvindex)
-            for i in range(amount):
-                if str(self.movieindex[i]['ID']) == str(id) and season in self.movieindex[i]['season_list']:
+            try:
+                if season in self.tvindex[id]['season_list']:
                     url = self.EpisodeScreenURL
-                    params =[['show_id', id],['season',str(i)],['user_id',self.user_id],['token',self.token]]
+                    params =[['show_id', id],['season',season],['user_id',self.user_id],['token',self.token]]
                     response = self.respCall(url,'appendEpisodes','get',params = params)
                     x = self.respParse(response,'appendEpisodes')
-                    self.movieindex[i][season] = {q['episode']:[q.get('src_free_sd'),q.get('src_vip_sd'),q.get('src_vip_hd'),q.get('src_vip_hd_1080p')] for q in x['episodes']}
+                    self.tvindex[id][season] = {q['episode']:[q.get('src_free_sd'),q.get('src_vip_sd'),q.get('src_vip_hd'),q.get('src_vip_hd_1080p')] for q in x['episodes']}
                     return
-            print('Not found Refreshing List...')
-            self.movieindex = self.totalindex('t')
+                else:
+                    print('Asked for episode before show')
+                    sys.exit()
+            except:
+                print('Not found Refreshing List...')
+                self.tvindex = self.totalindex('t')
+
     def appendShow(self,id):# Get Show Meta Data
         params = [['show_id', id],['user_id',self.user_id],['token',self.token]]
         url = self.MainShowURL
@@ -154,13 +157,13 @@ class mvids():
         parsed = self.respParse(response,'appendShow')
 
         while True:
-            amount = len(self.tvindex)
-            for i in range(amount):
-                if str(self.movieindex[i]['ID']) == str(id):
-                    self.movieindex[i]['season_list'] = list(parsed.keys())
-                    return
-            print('Not found Refreshing List...')
-            self.movieindex = self.totalindex('t')
+            try:
+                self.tvindex[id]['season_list'] = list(parsed.keys())
+                return
+            except:
+                print('Not found Refreshing List...')
+            self.tvindex = self.totalindex('t')
+
     def printTV(self):#Print all TV Shows
         for i in self.tvindex:
             print(i['TITLE'],' : ',i['ID'])
