@@ -5,12 +5,11 @@ import sys
 import time
 import html
 import logging
-
+import pickle
 class mvids():
     
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG)
-        
         self.test = False
         self.test = True
         logging.debug('This is a Test : '+str(self.test))
@@ -30,16 +29,21 @@ class mvids():
         
         ##Set active directery to location of script ##
         self._setCWD()
-        self.s = requests.session()
-        logging.debug('Session Initiated')
-        ##Set Variables self.user_id and self.token ## 
-        self.login()
+        while True:
+            self.s = requests.session()
+            logging.debug('Session Initiated')
+            ##Set Variables self.user_id and self.token ## 
+            self.login()
 
-        ## Return length of pages
-        self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
-        logging.debug(f"There are {self.pagenum['m']} pages of movies\nThere are {self.pagenum['t']} pages of TV Shows")
-        self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
-        logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+            ## Return length of pages
+            self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
+            logging.debug(f"There are {self.pagenum['m']} pages of movies\nThere are {self.pagenum['t']} pages of TV Shows")
+            self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
+            logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+            with open( "pickled.bin", "wb" ) as w:
+                pickle.dump( [self.movieindex, self.tvindex], w )
+            time.sleep(86400)
+    
     def _setCWD(self):#Set CWD to Script Location
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
         logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
@@ -127,120 +131,7 @@ class mvids():
                 index[str(q['id'])] = {'TITLE':html.unescape(q['title'])}
 
         return index   
-    def appendMovieIndex(self,id,info):#Add URLs to Movie
-        for a in range(2):
-            try:
-                self.movieindex[id].update(info)
-                return
-            except:
-                print('Not found Refreshing List...')
-                self.movieindex = self.totalindex('m')
-        logging.debug(f"{id} is invalid")
-    def addMovie(self,id):#Get Movie URLs and Update
-        params = [['id', id],['user_id',self.user_id],['token',self.token]]
-        url = self.MovieScreenURL
-        response = self.respCall(url,'addMovie','get',params = params)
-        x = self.respParse(response,'addMovie')
-        self.appendMovieIndex(id,x)
-    def appendEpisodes(self,id,season):#Get URL for entire season
-        for a in range(2):
-            try:
-                if season in str(self.tvindex[id].get('season_list')):
-                    url = self.EpisodeScreenURL
-                    params =[['show_id', id],['season',season],['user_id',self.user_id],['token',self.token]]
-                    response = self.respCall(url,'appendEpisodes','get',params = params)
-                    x = self.respParse(response,'appendEpisodes')
-                    self.tvindex[id][season] = {q['episode']:[q.get('src_free_sd'),q.get('src_vip_sd'),q.get('src_vip_hd'),q.get('src_vip_hd_1080p')] for q in x['episodes']}
-                    return
-                else:
-                    logging.debug('Asked for episode before show')
-                    return
-            except:
-                print('Not found Refreshing List...')
-                self.tvindex = self.totalindex('t')
-        logging.debug(f"{id} is invalid")
-    def appendShow(self,id):# Get Show Meta Data
-        params = [['show_id', id],['user_id',self.user_id],['token',self.token]]
-        url = self.MainShowURL
-        response = self.respCall(url,'appendShow','get',params = params)
-        parsed = self.respParse(response,'appendShow')
-
-        for a in range(2):
-            try:
-                self.tvindex[id]['season_list'] = list(parsed['season_list'].keys())
-                return
-            except:
-                print('Not found Refreshing List...')
-            self.tvindex = self.totalindex('t')
-        logging.debug(f"{id} is invalid")
-    
-    def printTV(self):#Print all TV Shows
-        print("All TV shows:\n")
-        for i in self.tvindex:
-            print(i,' : ',self.tvindex[i])
-    def printMovie(self):#Print all Movies
-        print("All movies:\n")
-        for i in self.movieindex:
-            print(i,' : ',self.movieindex[i])
-    def isMovieDown(self,id):
-        try:
-            x = self.movieindex[id]['src_free_sd']
-            return True
-        except:
-            return False
-    def isShowDown(self,id):
-        try:
-            x = self.tvindex[id]['season_list']
-            return True
-        except:
-            return False
-    def isSeasonDown(self,id,season):
-        try:
-            x = self.tvindex[id][season]
-            return True
-        except:
-            return False
-    def isEpisodeDown(self,id,season,ep):
-        try:
-            x = self.tvindex[id][season][ep]
-            return True
-        except:
-            return False
-    def getMovieURL(self,id):
-        if self.isMovieDown(id):
-            return (self.movieindex[id]['src_free_sd'],self.movieindex[id]['src_vip_sd'],self.movieindex[id]['src_vip_hd'],self.movieindex[id]['src_vip_hd_1080p'])
-        else:
-            logging.debug('Movie URL Unknown')
-            return False
-    def getEpisodeURL(self,id,season,ep):
-        if self.isEpisodeDown(id,season,ep):
-            return self.tvindex[id][season][ep]
-        else:
-            logging.debug('Episode URL Unknown')
-            return False
-    def getSeasonURL(self,id,season):
-        if self.isSeasonDown(id,season):
-            return [i for i in self.tvindex[id][season]]
-        else:
-            logging.debug('Episode URL Unknown')
-            return False
-
-
 x = mvids()
-while True:
-    x.printMovie()
-    x.addMovie(input('id'))
-    x.printMovie()
-    x.printTV()
-    x.appendShow(input('id'))
-    x.printTV()
-    x.printTV()
-    x.appendEpisodes(input('id'),input('sea'))
-    x.printTV()
-
-
-        
-
 
 
 
