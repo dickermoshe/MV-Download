@@ -1,0 +1,16 @@
+[[package]]
+category = "main"
+description = "pure python download utility"
+name = "wget"
+optional = false
+python-versions = "*"
+version = "3.2"
+
+[metadata]
+content-hash = "6e2bfb8c14943f803dc683f8e0f30d63598eff710d6bb29b41f3efe44a930ffe"
+python-versions = "^3.8"
+
+[metadata.files]
+wget = [
+    {file = "wget-3.2.zip", hash = "sha256:35e630eca2aa50ce998b9b1a127bb26b30dfee573702782aa982f875e3f16061"},
+]

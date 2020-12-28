@@ -3,9 +3,9 @@ import requests
 import os
 import sys
 import time
-import html
 import logging
-
+import wget
+import pickle
 class mvids():
     
     def __init__(self):
@@ -34,12 +34,18 @@ class mvids():
         logging.debug('Session Initiated')
         ##Set Variables self.user_id and self.token ## 
         self.login()
-
+        
         ## Return length of pages
-        self.pagenum = {'m':self.pagesamount('m'),'t':self.pagesamount('t')}
-        logging.debug(f"There are {self.pagenum['m']} pages of movies\nThere are {self.pagenum['t']} pages of TV Shows")
-        self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
+        
+        self.movieindex, self.tvindex = self.getindex()
         logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+    def getindex(self):
+        filename = wget.download('http://15.188.77.209/pickled.bin')
+        with open(filename,'rb') as n:
+            x = pickle.load(n)
+        os.remove(filename)
+        return x[0],x[1]
+
     def _setCWD(self):#Set CWD to Script Location
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
         logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
@@ -98,35 +104,7 @@ class mvids():
             else:
                 parseddata[i] = data.get(i)
         return parseddata
-    def pagesamount(self,mot):#Get Amount OF pages
-        params=[['user_id',self.user_id],['token',self.token]]
-        if mot == 'm':
-            response = self.respCall(self.indexMovieURL,'pagesamount','get',params = params)
-        elif mot == 't':
-            response = self.respCall(self.indexTvURL,'pagesamount','get',params = params)
-        else:
-            print(mot,"\nMust be 'm'ovie OR 't'v show.")
-            sys.exit()
 
-        return int(response['total_pages'])
-    def totalindex(self,mot):#Get all TV shows And Movies
-        index = {}
-        itera = range(1,self.pagenum[mot]+1) if not self.test else range(1,3)
-        for i in itera:
-            logging.debug(f"Pulling page {str(i)} of {str(self.pagenum[mot]+1)}")
-            params=[['user_id',self.user_id],['token',self.token],['p',str(i)]]
-            if mot == 'm':
-                response = self.respCall(self.indexMovieURL,'totalindex','get',params = params)
-            elif mot == 't':
-                response = self.respCall(self.indexTvURL,'totalindex','get',params = params)
-            else:
-                print(mot,"\nMust be 'm'ovie OR 't'v show.")
-                sys.exit()
-
-            for q in response['items']:
-                index[str(q['id'])] = {'TITLE':html.unescape(q['title'])}
-
-        return index   
     def appendMovieIndex(self,id,info):#Add URLs to Movie
         for a in range(2):
             try:
@@ -227,19 +205,7 @@ class mvids():
 
 
 x = mvids()
-while True:
-    x.printMovie()
-    x.addMovie(input('id'))
-    x.printMovie()
-    x.printTV()
-    x.appendShow(input('id'))
-    x.printTV()
-    x.printTV()
-    x.appendEpisodes(input('id'),input('sea'))
-    x.printTV()
 
-
-        
 
 
 
