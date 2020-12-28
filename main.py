@@ -221,7 +221,7 @@ class mvids():
     def getSeasonURL(self,id,season):
         if self.isSeasonDown(id,season):
             return [i for i in self.tvindex[id][season]]
-        else::
+        else:
             logging.debug('Episode URL Unknown')
             return False
 
