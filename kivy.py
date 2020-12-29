@@ -254,14 +254,23 @@ class MainApp(App):
             logging.debug('Episode URL Unknown')    
     
     def latest(self,place,data):
-        #0:TV Show Letter screen
-        #0:Movie Letter screen
         #1:Main screen
-        #2:Movie Screen
-        #3:Show Screen
-        #4:Episode Screen
-        #5:Download Screen
-        #Return Specific buttons
+        
+        #A2:Movie : Letter screen
+        #A3:Movie : Movie Screen - atr = Letter >> Quality
+        
+
+        #B2:Season : Letter Screen
+        #B3:Season : Show Screen - atr = Letter >> Quality
+
+        #C2:Episode : Letter screen
+        #C3:Episode : Show Screen - atr = Letter
+        #C3:Episode : Season Screen - atr = Season
+        #C4:Episode : Episode Screen - atr = Season Episode >> Quality
+        
+        #D Quality
+        
+        #always have back buttons
         self.newbuttons=[] 
 
 

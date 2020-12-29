@@ -27,7 +27,6 @@ class mvids():
         self.quality=['480P','480P VIP','720P VIP','1080P VIP']
         ##Set minimum execution times for different requests ##
         self.wait = {'login':0,'pagesamount':0,'totalindex':0,'moviepage':0,'showpage':0,'addMovie':0,'appendEpisodes':0,'appendShow':0}
-        
         ##Set active directery to location of script ##
         self._setCWD()
         self.s = requests.session()
