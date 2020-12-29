@@ -1,14 +1,16 @@
-###Imports
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
 import requests
 import os
 import sys
 import time
 import logging
-import wget
 import pickle
-class mvids():
-    
-    def __init__(self):
+
+class MainApp(App):
+    def __init__(self, **kwargs):
+        super(MainApp, self).__init__(**kwargs)
         logging.basicConfig(level=logging.DEBUG)
         
         self.test = False
@@ -41,7 +43,14 @@ class mvids():
         self.movieindex, self.tvindex = self.getindex()
         logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
     def getindex(self):
-        filename = wget.download('http://15.188.77.209/pickled.bin')
+        filename = 'pickled.bin'
+        response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
+        with open(filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+        
         with open(filename,'rb') as n:
             x = pickle.load(n)
         os.remove(filename)
@@ -243,38 +252,32 @@ class mvids():
             return index
         else:
             logging.debug('Episode URL Unknown')    
+    
+    def latest(self,place,data):
+        #0:TV Show Letter screen
+        #0:Movie Letter screen
+        #1:Main screen
+        #2:Movie Screen
+        #3:Show Screen
+        #4:Episode Screen
+        #5:Download Screen
+        #Return Specific buttons
+        self.newbuttons=[] 
 
-x = mvids()
 
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
+    def build(self):
+        self.layout = BoxLayout(padding=10)
+        self.button = Button(text='Hello from Kivy',
+                        size_hint=(.5, .5),
+                        pos_hint={'center_x': .5, 'center_y': .5})
+        self.button.bind(on_press=self.on_press_button)
+        self.layout.add_widget(self.button)
+        return self.layout
 
-x.printTV()
-print(x.getEpisodeQuality(input('show'),input('season'),input('episode')))
-time.sleep(50)
+    def on_press_button(self, instance):
+        self.layout.remove_widget(self.button)
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
-
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
-
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
-
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
-
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
-
+if __name__ == '__main__':
+    app = MainApp()
+    app.run()
