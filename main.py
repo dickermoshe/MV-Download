@@ -4,7 +4,6 @@ import os
 import sys
 import time
 import logging
-import wget
 import pickle
 class mvids():
     
@@ -41,12 +40,18 @@ class mvids():
         self.movieindex, self.tvindex = self.getindex()
         logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
     def getindex(self):
-        filename = wget.download('http://15.188.77.209/pickled.bin')
+        filename = 'pickled.bin'
+        response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
+        with open(filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+        
         with open(filename,'rb') as n:
             x = pickle.load(n)
         os.remove(filename)
         return {str(i): x[0][i] for i in x[0]},{str(i): x[1][i] for i in x[1]}
-        #return x[0],x[1]
 
     def _setCWD(self):#Set CWD to Script Location
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
