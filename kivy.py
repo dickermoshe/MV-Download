@@ -332,30 +332,60 @@ class MainApp(App):
         self.wipe()
         self.addBack()
         let = '#abcdefghijklmnopqrstuvwxyz'
-  
-        for i in let:
-            tempbutton = Button(text=i.upper(),
+        let = {i.upper():[i,mse] for i in let}
+        print(let)
+        for i in self.buttoniter(self.present,let):
+            tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=lambda widget: self.present(i,mse))
+            tempbutton.bind(on_press=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
     
     def present(self,but,mse):
+        x = self.letterlist(but,mse)
+        if x == False:
+            return
         self.dontgetlost.append([self.present,[but,mse]])
         self.wipe()
         self.addBack()
-        x = self.letterlist(but,mse)
+        if mse in 'm':
+            let = {x[i]:[mse,i] for i in x}
 
-        for i in x:
-            tempbutton = Button(text=x[i],
+            for i in self.buttoniter(self.moviepresent,let):
+                tempbutton = Button(text=i[1],
+                                size_hint=(.5, .5),
+                                pos_hint={'center_x': .5, 'center_y': .5})
+                tempbutton.bind(on_press=i[0])
+                self.layout.add_widget(tempbutton)
+                self.current_buttons.append(tempbutton)
+    
+    def moviepresent(self,mse,id):
+        self.dontgetlost.append([self.moviepresent,[mse,id]])
+        self.wipe()
+        self.addBack()
+        x = self.getMovieURL(id)
+        y = {}
+        for i in range(len(x)):
+            if x[i] == None or len(str(x[i])) < 1:
+                continue
+            else:
+                y[self.quality[i]] = x[i]
+        let = {i:[y[i]] for i in y}
+        for i in self.buttoniter(self.downURL,let):
+            tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=self.present(let[i],[self.alpha,com]))
+            tempbutton.bind(on_press=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
+
+    def downURL(self,url):
+        print(url)
     
+    
+
     
     
     def wipe(self):
@@ -391,7 +421,7 @@ class MainApp(App):
     def build(self):
         self.dontgetlost = []
         self.current_buttons = None
-        self.layout = GridLayout(cols=1, size_hint_y=None,row_force_default=True, row_default_height=40)
+        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
         self.layout.bind(minimum_height=self.layout.setter("height"))
         
         Window.size = (500, 500)
