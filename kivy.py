@@ -254,40 +254,45 @@ class MainApp(App):
             logging.debug('Episode URL Unknown')
     def letterlist(self,let,mse):
         index = self.tvindex if mse in 'se' else self.movieindex
+        newindex = {}
         for i in index:
-            if index[i][0].lower() != let:
-                del index[i]
-        return index 
+            if index[i][0].lower() == let:
+                newindex[i] = index[i]
+        return newindex
     
 
 
 
 
-    def main_screen():
+    def main_screen(self):
         self.wipe()
         commands = {'Download Movies':'m','TV Shows : Season':'s','TV Shows : Episodes':'e'}
         for i in commands:
             tempbutton = Button(text=i,
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=self.alpha(commands[i]))
+            tempbutton.bind(on_press=lambda widget: self.alpha(commands[i]))
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
     def gorightback(self):
         self.wipe()
-        x = self.dontgetlost[-1]
-        if len(x) == 1:
-            x[-1][0]()
+        if len(self.dontgetlost) == 1:
+            self.main_screen()
         else:
-            x[-1][0](*x[-1][1])
+            x = self.dontgetlost[-2]
+            if len(x) == 1:
+                x[0]()
+            else:
+                x[0](*x[1])
+                print('done')
         del self.dontgetlost[-1]
     
     def addBack(self):
         tempbutton = Button(text='Back',
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-        tempbutton.bind(on_press=self.gorightback())    
+        tempbutton.bind(on_press=lambda widget: self.gorightback())    
         self.layout.add_widget(tempbutton)
         self.current_buttons.append(tempbutton)
     
@@ -298,10 +303,10 @@ class MainApp(App):
         let = '#abcdefghijklmnopqrstuvwxyz'
   
         for i in let:
-            tempbutton = Button(text=i,
+            tempbutton = Button(text=i.upper(),
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=self.present(let[i],mse))
+            tempbutton.bind(on_press=lambda widget: self.present(let[i],mse))
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
@@ -354,13 +359,14 @@ class MainApp(App):
     def build(self):
         self.dontgetlost = []
         self.current_buttons = None
-        self.layout = BoxLayout(padding=10)
-        self.window(['main_screen',None,None])
+        self.layout = BoxLayout(padding=10, orientation = 'vertical')
+        self.main_screen()
         return self.layout
 
     def on_press_button(self, instance):
         self.layout.remove_widget(self.button)
 
-if __name__ == '__main__':
-    app = MainApp()
-    app.run()
+#if __name__ == '__main__':
+app = MainApp()
+app.run()
+
