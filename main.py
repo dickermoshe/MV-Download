@@ -263,7 +263,7 @@ class MainApp(App):
         index = self.tvindex if mse in 'se' else self.movieindex
         newindex = {}
         for i in index:
-            if index[i]['TITLE'][0].lower() == let.lower() or if index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz':
+            if index[i]['TITLE'][0].lower() == let.lower() or  index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz':
                 newindex[i] = index[i]['TITLE']
         if len(newindex) >0:
             return newindex
