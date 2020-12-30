@@ -264,31 +264,55 @@ class MainApp(App):
 
 
 
+    def make_f(self,i,o):
+        def f(self):
+            i(*o)
+        return f
+    def buttoniter(self,func,com):#com is dict
+        functions = []
+        
+        for i in com:
+            f = self.make_f(func,com[i])
+            functions.append([f,i])
+        return functions
+            
+
+
+
+
     def main_screen(self):
         self.wipe()
-        commands = {'Download Movies':'m','TV Shows : Season':'s','TV Shows : Episodes':'e'}
-        for i in commands:
-            tempbutton = Button(text=i,
+        commands = {'Download Movies':['m'],'TV Shows : Season':['s'],'TV Shows : Episodes':['e']}
+
+
+
+        for i in self.buttoniter(self.alpha,commands):
+            tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=lambda widget: self.alpha(commands[i]))
+            tempbutton.bind(on_press= i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
     def gorightback(self):
         self.wipe()
-        print(self.dontgetlost)
+        print('BEter',self.dontgetlost)
         if len(self.dontgetlost) == 1:
+            del self.dontgetlost[-1]
             self.main_screen()
         else:
             x = self.dontgetlost[-2]
+
+            del self.dontgetlost[-2]
             del self.dontgetlost[-1]
+
+            
             if len(x) == 1:
                 x[0]()
             else:
                 x[0](*x[1])
                 print('done')
-
+        print('AFter',self.dontgetlost)
     
     def addBack(self):
         tempbutton = Button(text='Back',
@@ -371,3 +395,4 @@ class MainApp(App):
 #if __name__ == '__main__':
 app = MainApp()
 app.run()
+
