@@ -1,15 +1,24 @@
-###Imports
+from kivy.uix.gridlayout import GridLayout
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
 import requests
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 import os
 import sys
 import time
 import logging
 import pickle
-class mvids():
-    
-    def __init__(self):
+from kivy.config import Config
+from kivy.app import runTouchApp
+
+class MainApp(App):
+    def __init__(self, **kwargs):
+        super(MainApp, self).__init__(**kwargs)
         logging.basicConfig(level=logging.DEBUG)
         
+
         self.test = False
         self.test = True
         logging.debug('This is a Test : '+str(self.test))
@@ -51,6 +60,7 @@ class mvids():
             x = pickle.load(n)
         os.remove(filename)
         return {str(i): x[0][i] for i in x[0]},{str(i): x[1][i] for i in x[1]}
+        #return x[0],x[1]
 
     def _setCWD(self):#Set CWD to Script Location
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
@@ -246,44 +256,184 @@ class mvids():
                     index[self.quality[i]]=self.tvindex[id][season][ep][i]
             return index
         else:
-            logging.debug('Episode URL Unknown')    
-    def letterlist(self,mse,let):
+            logging.debug('Episode URL Unknown')
+    def letterlist(self,let,mse):
         index = self.tvindex if mse in 'se' else self.movieindex
+        newindex = {}
         for i in index:
-            if index[i][0].lower() != let:
-                del index[i]
-        return index
-x = mvids()
+            if index[i]['TITLE'][0].lower() == let.lower():
+                newindex[i] = index[i]['TITLE']
+        if len(newindex) >0:
+            return newindex
+        else:
+            print('ggggg')
+            return False
+    
+    def make_f(self,i,o):
+        def f(self):
+            i(*o)
+        return f
+    def buttoniter(self,func,com):#com is dict
+        functions = []
+        
+        for i in com:
+            f = self.make_f(func,com[i])
+            functions.append([f,i])
+        return functions
+            
 
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
 
-x.printTV()
-print(x.getEpisodeQuality(input('show'),input('season'),input('episode')))
-time.sleep(50)
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
+    def main_screen(self):
+        self.wipe()
+        commands = {'Download Movies':['m'],'TV Shows : Season':['s'],'TV Shows : Episodes':['e']}
 
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
 
-x.printTV()
-print(x.appendShow(input()))
-time.sleep(2)
+        for i in self.buttoniter(self.alpha,commands):
+            tempbutton = Button(text=i[1],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press= i[0])
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+    
+    def gorightback(self):
+        self.wipe()
+        print('BEter',self.dontgetlost)
+        if len(self.dontgetlost) == 1:
+            del self.dontgetlost[-1]
+            self.main_screen()
+        else:
+            x = self.dontgetlost[-2]
 
-x.printTV()
-print(x.appendEpisodes(input('show'),input('season')))
-time.sleep(2)
+            del self.dontgetlost[-2]
+            del self.dontgetlost[-1]
 
+            
+            if len(x) == 1:
+                x[0]()
+            else:
+                x[0](*x[1])
+                print('done')
+        print('AFter',self.dontgetlost)
+    
+    def addBack(self):
+        tempbutton = Button(text='Back',
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+        tempbutton.bind(on_press=lambda widget: self.gorightback())    
+        self.layout.add_widget(tempbutton)
+        self.current_buttons.append(tempbutton)
+    
+    def alpha(self,mse):
+        self.dontgetlost.append([self.alpha,[mse]])
+        self.wipe()
+        self.addBack()
+        let = '#abcdefghijklmnopqrstuvwxyz'
+        let = {i.upper():[i,mse] for i in let}
+        print(let)
+        for i in self.buttoniter(self.present,let):
+            tempbutton = Button(text=i[1],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=i[0])
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+    
+    
+    def present(self,but,mse):
+        x = self.letterlist(but,mse)
+        if x == False:
+            return
+        self.dontgetlost.append([self.present,[but,mse]])
+        self.wipe()
+        self.addBack()
+        if mse in 'm':
+            let = {x[i]:[mse,i] for i in x}
+
+            for i in self.buttoniter(self.moviepresent,let):
+                tempbutton = Button(text=i[1],
+                                size_hint=(.5, .5),
+                                pos_hint={'center_x': .5, 'center_y': .5})
+                tempbutton.bind(on_press=i[0])
+                self.layout.add_widget(tempbutton)
+                self.current_buttons.append(tempbutton)
+    
+    def moviepresent(self,mse,id):
+        self.dontgetlost.append([self.moviepresent,[mse,id]])
+        self.wipe()
+        self.addBack()
+        self.addMovie(id)
+        x = self.getMovieURL(id)
+        y = {}
+        for i in range(len(x)):
+            if x[i] == None or len(str(x[i])) < 1:
+                continue
+            else:
+                y[self.quality[i]] = x[i]
+        let = {i:[y[i]] for i in y}
+        for i in self.buttoniter(self.downURL,let):
+            tempbutton = Button(text=i[1],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=i[0])
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+
+    def downURL(self,url):
+        print(url)
+    
+    
+
+    
+    
+    def wipe(self):
+        if self.current_buttons == None:
+            pass
+        else:
+            for i in self.current_buttons:
+                self.layout.remove_widget(i)
+        self.current_buttons = []
+            
+        #1:Main screen
+        
+        #A2:Movie : Letter screen
+        #A3:Movie : Movie Screen - atr = Letter >> Quality
+        
+
+        #B2:Season : Letter Screen
+        #B3:Season : Show Screen - atr = Letter >> Quality
+
+        #C2:Episode : Letter screen
+        #C3:Episode : Show Screen - atr = Letter
+        #C3:Episode : Season Screen - atr = Season
+        #C4:Episode : Episode Screen - atr = Season Episode >> Quality
+        
+        #D Quality
+        
+        #always have back buttons
+        self.newbuttons=[] 
+
+
+
+
+    def build(self):
+        self.dontgetlost = []
+        self.current_buttons = None
+        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
+        self.layout.bind(minimum_height=self.layout.setter("height"))
+        
+        Window.size = (500, 500)
+        self.root = ScrollView(size_hint_x=1 , size=(Window.width, Window.height))
+        self.root.add_widget(self.layout)
+        self.main_screen()
+        return self.root
+
+    def on_press_button(self, instance):
+        self.layout.remove_widget(self.button)
+
+#if __name__ == '__main__':
+app = MainApp()
+app.run()

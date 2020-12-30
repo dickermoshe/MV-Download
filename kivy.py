@@ -268,7 +268,6 @@ class MainApp(App):
 
 
 
-
     def make_f(self,i,o):
         def f(self):
             i(*o)
@@ -365,6 +364,7 @@ class MainApp(App):
         self.dontgetlost.append([self.moviepresent,[mse,id]])
         self.wipe()
         self.addBack()
+        self.addMovie(id)
         x = self.getMovieURL(id)
         y = {}
         for i in range(len(x)):
