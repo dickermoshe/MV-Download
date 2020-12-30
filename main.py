@@ -112,6 +112,8 @@ class MainApp(App):
                 continue
             break
         return z
+    def parseURL(self,string):
+        return string.replace(' ','%')
     def respParse(self,data,master):#Ensure corect return
         parseddata = {}
         for i in self.masterkeys[master]:
@@ -261,7 +263,7 @@ class MainApp(App):
         index = self.tvindex if mse in 'se' else self.movieindex
         newindex = {}
         for i in index:
-            if index[i]['TITLE'][0].lower() == let.lower():
+            if index[i]['TITLE'][0].lower() == let.lower() or if index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz':
                 newindex[i] = index[i]['TITLE']
         if len(newindex) >0:
             return newindex
