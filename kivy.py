@@ -277,16 +277,18 @@ class MainApp(App):
     
     def gorightback(self):
         self.wipe()
+        print(self.dontgetlost)
         if len(self.dontgetlost) == 1:
             self.main_screen()
         else:
             x = self.dontgetlost[-2]
+            del self.dontgetlost[-1]
             if len(x) == 1:
                 x[0]()
             else:
                 x[0](*x[1])
                 print('done')
-        del self.dontgetlost[-1]
+
     
     def addBack(self):
         tempbutton = Button(text='Back',
@@ -306,7 +308,7 @@ class MainApp(App):
             tempbutton = Button(text=i.upper(),
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=lambda widget: self.present(let[i],mse))
+            tempbutton.bind(on_press=lambda widget: self.present(i,mse))
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
@@ -369,4 +371,3 @@ class MainApp(App):
 #if __name__ == '__main__':
 app = MainApp()
 app.run()
-
