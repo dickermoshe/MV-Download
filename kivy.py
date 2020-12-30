@@ -1,12 +1,17 @@
+from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 import requests
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 import os
 import sys
 import time
 import logging
 import pickle
+from kivy.config import Config
+from kivy.app import runTouchApp
 
 class MainApp(App):
     def __init__(self, **kwargs):
@@ -382,12 +387,18 @@ class MainApp(App):
 
 
 
+
     def build(self):
         self.dontgetlost = []
         self.current_buttons = None
-        self.layout = BoxLayout(padding=10, orientation = 'vertical')
+        self.layout = GridLayout(cols=1, size_hint_y=None,row_force_default=True, row_default_height=40)
+        self.layout.bind(minimum_height=self.layout.setter("height"))
+        
+        Window.size = (500, 500)
+        self.root = ScrollView(size_hint_x=1 , size=(Window.width, Window.height))
+        self.root.add_widget(self.layout)
         self.main_screen()
-        return self.layout
+        return self.root
 
     def on_press_button(self, instance):
         self.layout.remove_widget(self.button)
@@ -395,4 +406,3 @@ class MainApp(App):
 #if __name__ == '__main__':
 app = MainApp()
 app.run()
-
