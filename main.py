@@ -247,7 +247,12 @@ class mvids():
             return index
         else:
             logging.debug('Episode URL Unknown')    
-
+    def letterlist(self,mse,let):
+        index = self.tvindex if mse in 'se' else self.movieindex
+        for i in index:
+            if index[i][0].lower() != let:
+                del index[i]
+        return index
 x = mvids()
 
 x.printTV()

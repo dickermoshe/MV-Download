@@ -251,9 +251,85 @@ class MainApp(App):
                     index[self.quality[i]]=self.tvindex[id][season][ep][i]
             return index
         else:
-            logging.debug('Episode URL Unknown')    
+            logging.debug('Episode URL Unknown')
+    def letterlist(self,let,mse):
+        index = self.tvindex if mse in 'se' else self.movieindex
+        for i in index:
+            if index[i][0].lower() != let:
+                del index[i]
+        return index 
     
-    def latest(self,place,data):
+
+
+
+
+    def main_screen():
+        self.wipe()
+        commands = {'Download Movies':'m','TV Shows : Season':'s','TV Shows : Episodes':'e'}
+        for i in commands:
+            tempbutton = Button(text=i,
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=self.alpha(commands[i]))
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+    
+    def gorightback(self):
+        self.wipe()
+        x = self.dontgetlost[-1]
+        if len(x) == 1:
+            x[-1][0]()
+        else:
+            x[-1][0](*x[-1][1])
+        del self.dontgetlost[-1]
+    
+    def addBack(self):
+        tempbutton = Button(text='Back',
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+        tempbutton.bind(on_press=self.gorightback())    
+        self.layout.add_widget(tempbutton)
+        self.current_buttons.append(tempbutton)
+    
+    def alpha(self,mse):
+        self.dontgetlost.append([self.alpha,[mse]])
+        self.wipe()
+        self.addBack()
+        let = '#abcdefghijklmnopqrstuvwxyz'
+  
+        for i in let:
+            tempbutton = Button(text=i,
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=self.present(let[i],mse))
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+    
+    
+    def present(self,but,mse):
+        self.dontgetlost.append([self.present,[but,mse]])
+        self.wipe()
+        self.addBack()
+        x = self.letterlist(but,mse)
+
+        for i in x:
+            tempbutton = Button(text=x[i],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=self.present(let[i],[self.alpha,com]))
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+    
+    
+    
+    def wipe(self):
+        if self.current_buttons == None:
+            pass
+        else:
+            for i in self.current_buttons:
+                self.layout.remove_widget(i)
+        self.current_buttons = []
+            
         #1:Main screen
         
         #A2:Movie : Letter screen
@@ -276,12 +352,10 @@ class MainApp(App):
 
 
     def build(self):
+        self.dontgetlost = []
+        self.current_buttons = None
         self.layout = BoxLayout(padding=10)
-        self.button = Button(text='Hello from Kivy',
-                        size_hint=(.5, .5),
-                        pos_hint={'center_x': .5, 'center_y': .5})
-        self.button.bind(on_press=self.on_press_button)
-        self.layout.add_widget(self.button)
+        self.window(['main_screen',None,None])
         return self.layout
 
     def on_press_button(self, instance):
