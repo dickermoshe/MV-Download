@@ -518,12 +518,13 @@ class MainApp(App):
     def downmanyURL(self):
         listofurl =self.listofurlsfordown
         self.progress = Label(text='Downloading '+str(len(listofurl)) + ' Episodes\n')
+        x = 'Downloading '+str(len(listofurl)) + ' Episodes\n'
         self.popup = Popup(title='Downloading', content=self.progress,size_hint=(.5, .5),
               auto_dismiss=False)
         self.popup.open()
 
         for i in range(len(listofurl)):
-            self.progress.text = self.progress.text + 'Downloading '+str(i+1) + ' out of ' + str(len(listofurl))
+            self.progress.text = x + 'Downloading '+str(i+1) + ' out of ' + str(len(listofurl))
             if i+1 == len(listofurl):
                 self.downURLsin(listofurl[i],last = True)
             else:
