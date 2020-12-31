@@ -1,3 +1,5 @@
+
+import requests
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
 from kivy.uix.button import Button
@@ -12,6 +14,9 @@ import logging
 import pickle
 from kivy.config import Config
 from kivy.app import runTouchApp
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from threading import Thread
 
 class MainApp(App):
     def __init__(self, **kwargs):
@@ -263,7 +268,7 @@ class MainApp(App):
         index = self.tvindex if mse in 'se' else self.movieindex
         newindex = {}
         for i in index:
-            if index[i]['TITLE'][0].lower() == let.lower() or  index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz':
+            if (index[i]['TITLE'][0].lower() == let.lower()) or  (index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz' and let.lower() == '#'):
                 newindex[i] = index[i]['TITLE']
         if len(newindex) >0:
             return newindex
@@ -283,7 +288,7 @@ class MainApp(App):
             y = x[i]
             y.reverse()
             for o in range(len(y)):
-                if y[o] != None or len(str(y[o] )) > 1:
+                if y[o] != None:
                     if fhdplace == None:
                         fhdplace = o
                     if o > 1 and hdplace == None:
@@ -459,7 +464,7 @@ class MainApp(App):
         for i in range(3):
             y[self.seasonqualitynames[i]] = x[i]
         let = {i:[y[i]] for i in y}
-        for i in self.buttoniter(self.downURL,let):
+        for i in self.buttoniter(self.downmanyURL,let):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
@@ -508,9 +513,40 @@ class MainApp(App):
     
     
     def downURL(self,url):
-        print(url)
-    
-    
+        self.progress = Label(text='Please wait.\nThis window will close\nwhen download is complete.\n')
+        
+        self.popup = Popup(title='Downloading', content=self.progress,size_hint=(.5, .5),
+              auto_dismiss=False)
+        self.popup.open()
+        self.activeurl = url
+        print('hi')
+        download = Thread(target=self.actdown,daemon=True)
+
+        # Starts the new thread
+        download.start()
+        print('hi')
+        
+    def perc(self,x,total):
+        return "%.0f%%" % (100 * x/total)   
+        
+        
+        
+        #self.popup.dismiss()
+    def downmanyURL(self,url):
+        pass
+    def actdown(self):
+        response = requests.get(self.activeurl, stream = True)
+        total_size_in_bytes= int(response.headers.get('content-length', 0))
+        
+        filename = self.activeurl.split('/')[-1].split('?xhk')[0]
+        completed = 0
+        text_file = open(filename,"wb")
+        for chunk in response.iter_content(chunk_size=1024):
+            text_file.write(chunk)
+            completed += len(chunk)
+            self.progress.text = 'Please wait.\nThis window will close\nwhen download is complete.\n'+self.perc(completed,total_size_in_bytes)
+        text_file.close()
+        self.popup.dismiss()
 
     
     
