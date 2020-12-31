@@ -352,10 +352,20 @@ class MainApp(App):
         self.dontgetlost.append([self.present,[but,mse]])
         self.wipe()
         self.addBack()
-        if mse in 'm':
+        if mse == 'm':
             let = {x[i]:[mse,i] for i in x}
 
             for i in self.buttoniter(self.moviepresent,let):
+                tempbutton = Button(text=i[1],
+                                size_hint=(.5, .5),
+                                pos_hint={'center_x': .5, 'center_y': .5})
+                tempbutton.bind(on_press=i[0])
+                self.layout.add_widget(tempbutton)
+                self.current_buttons.append(tempbutton)
+        if mse in 'es':
+            let = {x[i]:[mse,i] for i in x}
+
+            for i in self.buttoniter(self.seasonpresent,let):
                 tempbutton = Button(text=i[1],
                                 size_hint=(.5, .5),
                                 pos_hint={'center_x': .5, 'center_y': .5})
@@ -384,6 +394,53 @@ class MainApp(App):
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
+    def seasonpresent(self,mse,id):
+        self.dontgetlost.append([self.seasonpresent,[mse,id]])
+        self.wipe()
+        self.addBack()
+        x = self.appendShow(id)
+        x.reverse
+        #x = self.getMovieURL(id)
+        
+        x = {'Season' + str(i)+ ' ':[mse,id,str(i)] for i in x}
+        if mse == 'e':
+            y  = self.buttoniter(self.episodepresent,x)
+        else:
+            y  = self.buttoniter(self.,x)
+        
+
+        for i in y:
+            tempbutton = Button(text=i[1],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=i[0])
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+        
+    def episodepresent(self,mse,id,season):
+        self.dontgetlost.append([self.episodepresent,[mse,id,season]])
+        self.wipe()
+        self.addBack()
+        x = self.getMovieURL(id)
+        y = {}
+        for i in range(len(x)):
+            if x[i] == None or len(str(x[i])) < 1:
+                continue
+            else:
+                y[self.quality[i]] = x[i]
+        let = {i:[y[i]] for i in y}
+        for i in self.buttoniter(self.downURL,let):
+            tempbutton = Button(text=i[1],
+                            size_hint=(.5, .5),
+                            pos_hint={'center_x': .5, 'center_y': .5})
+            tempbutton.bind(on_press=i[0])
+            self.layout.add_widget(tempbutton)
+            self.current_buttons.append(tempbutton)
+
+
+
+    
+    
     def downURL(self,url):
         print(url)
     
