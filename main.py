@@ -464,7 +464,7 @@ class MainApp(App):
         for i in range(3):
             y[self.seasonqualitynames[i]] = x[i]
         let = {i:[y[i]] for i in y}
-        for i in self.buttoniter(self.downmanyURL,let):
+        for i in self.buttoniter(self.threaddownmany,let):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
@@ -509,9 +509,36 @@ class MainApp(App):
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
+    def threaddownmany(self,listofurl):
+        self.listofurlsfordown = listofurl
+        
+        downloadmany = Thread(target=self.downmanyURL,daemon=True)
 
-    
-    
+        downloadmany.start()
+    def downmanyURL(self):
+        listofurl =self.listofurlsfordown
+        self.progress = Label(text='Downloading '+str(len(listofurl)) + ' Episodes\n')
+        self.popup = Popup(title='Downloading', content=self.progress,size_hint=(.5, .5),
+              auto_dismiss=False)
+        self.popup.open()
+
+        for i in range(len(listofurl)):
+            self.progress.text = self.progress.text + 'Downloading '+str(i+1) + ' out of ' + str(len(listofurl))
+            if i+1 == len(listofurl):
+                self.downURLsin(listofurl[i],last = True)
+            else:
+                self.downURLsin(listofurl[i])
+
+    def downURLsin(self,url,last = False):
+
+        self.activeurl = url
+        self.last = last
+        download = Thread(target=self.act4manydown,daemon=True)
+
+        # Starts the new thread
+        download.start()
+        download.join()
+
     def downURL(self,url):
         self.progress = Label(text='Please wait.\nThis window will close\nwhen download is complete.\n')
         
@@ -532,8 +559,7 @@ class MainApp(App):
         
         
         #self.popup.dismiss()
-    def downmanyURL(self,url):
-        pass
+
     def actdown(self):
         response = requests.get(self.activeurl, stream = True)
         total_size_in_bytes= int(response.headers.get('content-length', 0))
@@ -547,7 +573,21 @@ class MainApp(App):
             self.progress.text = 'Please wait.\nThis window will close\nwhen download is complete.\n'+self.perc(completed,total_size_in_bytes)
         text_file.close()
         self.popup.dismiss()
-
+    def act4manydown(self):
+        x = self.progress.text
+        response = requests.get(self.activeurl, stream = True)
+        total_size_in_bytes= int(response.headers.get('content-length', 0))
+        
+        filename = self.activeurl.split('/')[-1].split('?xhk')[0]
+        completed = 0
+        text_file = open(filename,"wb")
+        for chunk in response.iter_content(chunk_size=1024):
+            text_file.write(chunk)
+            completed += len(chunk)
+            self.progress.text = x+'\n'+self.perc(completed,total_size_in_bytes)
+        text_file.close()
+        if self.last:
+            self.popup.dismiss()
     
     
     def wipe(self):
