@@ -1,4 +1,5 @@
 
+from android.storage import primary_external_storage_path
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
@@ -10,7 +11,6 @@ from kivy.core.window import Window
 import os
 import sys
 import time
-import logging
 import pickle
 from kivy.config import Config
 from kivy.app import runTouchApp
@@ -21,12 +21,10 @@ from threading import Thread
 class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
-        logging.basicConfig(level=logging.DEBUG)
         
 
         self.test = False
-        self.test = True
-        logging.debug('This is a Test : '+str(self.test))
+        #self.test = True
         ##URLs for indexing Movies and TV##
         self.indexMovieURL = 'https://mobilevids.org/webapi/videos/movies.php'
         self.MainShowURL='https://mobilevids.org/webapi/videos/get_season.php'
@@ -45,14 +43,13 @@ class MainApp(App):
         ##Set active directery to location of script ##
         self._setCWD()
         self.s = requests.session()
-        logging.debug('Session Initiated')
         ##Set Variables self.user_id and self.token ## 
         self.login()
         
         ## Return length of pages
         
         self.movieindex, self.tvindex = self.getindex()
-        logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+
     def getindex(self):
         filename = 'pickled.bin'
         response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
@@ -69,8 +66,8 @@ class MainApp(App):
         #return x[0],x[1]
 
     def _setCWD(self):#Set CWD to Script Location
-        os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
-        logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
+        os.chdir(primary_external_storage_path())
+
     def login(self):#Login
 
         data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
@@ -89,7 +86,7 @@ class MainApp(App):
                 response = self.s.post(url,params=params,data = data)
             else:
                 print("Must be post OR get.")
-                sys.exit()
+
             
             end = time.time()# Get End Time
             
@@ -107,7 +104,6 @@ class MainApp(App):
                     continue
                 else:
                     print(response.text,"\nCould not JSON. Exiting")
-                    sys.exit()
             if 'session missmatch' in str(y.get('reason')):
                 self.login()
                 continue
@@ -137,10 +133,10 @@ class MainApp(App):
             except:
                 print('Not found Refreshing List...')
                 self.movieindex = self.totalindex('m')
-        logging.debug(f"{id} is invalid")
+
     def addMovie(self,id):#Get Movie URLs and Update
         if self.movieindex.get(id) == None:
-            logging.debug(f"{id} Does not exist")
+
             return False
         else:
             if self.movieindex.get(id).get('src_free_sd')!= None:
@@ -164,15 +160,15 @@ class MainApp(App):
                     self.tvindex[id][season] = {str(q['episode']):[q.get('src_free_sd'),q.get('src_vip_sd'),q.get('src_vip_hd'),q.get('src_vip_hd_1080p')] for q in x['episodes']}
                     return self.tvindex[id][season]
                 else:
-                    logging.debug('Asked for episode before show or season not in show')
+
                     return
             except:
                 print('Not found Refreshing List...')
                 self.tvindex = self.totalindex('t')
-        logging.debug(f"{id} is invalid")
+
     def appendShow(self,id):# Get Show Meta Data
         if self.tvindex.get(id) == None:
-            logging.debug(f"{id} Does not exist")
+
             return False
         else:
             if self.tvindex.get(id).get('season_list')!= None:
@@ -189,7 +185,6 @@ class MainApp(App):
             except:
                 print('Not found Refreshing List...')
             self.tvindex = self.totalindex('t')
-        logging.debug(f"{id} is invalid")
     
     def printTV(self):#Print all TV Shows
         print("All TV shows:\n")
@@ -227,23 +222,19 @@ class MainApp(App):
         if self.isMovieDown(id):
             return (self.movieindex[id]['src_free_sd'],self.movieindex[id]['src_vip_sd'],self.movieindex[id]['src_vip_hd'],self.movieindex[id]['src_vip_hd_1080p'])
         else:
-            logging.debug('Movie URL Unknown')
             return False
     def getEpisodeURL(self,id,season,ep):
         if self.isEpisodeDown(id,season,ep):
             return self.tvindex[id][season][ep]
         else:
-            logging.debug('Episode URL Unknown')
             return False
     def getSeasonURL(self,id,season):
         if self.isSeasonDown(id,season):
             return [i for i in self.tvindex[id][season]]
         else:
-            logging.debug('Episode URL Unknown')
             return False
     def getSeasonStats(self,id,season):
         if self.tvindex.get(id) == None:
-            logging.debug(f"{id} Does not exist")
             return False
         elif self.tvindex[id].get(season) == None:
             return False            
@@ -252,7 +243,6 @@ class MainApp(App):
         if self.isMovieDown(id):
             return (self.movieindex[id]['src_free_sd'],self.movieindex[id]['src_vip_sd'],self.movieindex[id]['src_vip_hd'],self.movieindex[id]['src_vip_hd_1080p'])
         else:
-            logging.debug('Movie URL Unknown')
             return False
     def getEpisodeQuality(self,id,season,ep):
         print(self.isEpisodeDown(id,season,ep))
@@ -263,7 +253,7 @@ class MainApp(App):
                     index[self.quality[i]]=self.tvindex[id][season][ep][i]
             return index
         else:
-            logging.debug('Episode URL Unknown')
+            pass
     def letterlist(self,let,mse):
         index = self.tvindex if mse in 'se' else self.movieindex
         newindex = {}
