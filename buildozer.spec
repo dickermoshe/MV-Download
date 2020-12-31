@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,requests,os,time,logging,pickle,threading,android
+requirements = python3, kivy, requests,os,time,logging,pickle,threading,android
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -85,7 +85,7 @@ fullscreen = 1
 #android.presplash_color = #FFFFFF
 
 # (list) Permissions
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE
+android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE
 
 # (int) Target Android API, should be as high as possible.
 #android.api = 27
@@ -94,7 +94,7 @@ android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE
 #android.minapi = 21
 
 # (int) Android SDK version to use
-android.sdk = 16
+
 
 # (str) Android NDK version to use
 #android.ndk = 19b
