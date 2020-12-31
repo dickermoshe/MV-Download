@@ -9,7 +9,6 @@ import requests
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 import os
-import sys
 import time
 import pickle
 from kivy.config import Config
