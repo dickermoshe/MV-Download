@@ -18,7 +18,6 @@ class MainApp(App):
         super(MainApp, self).__init__(**kwargs)
         logging.basicConfig(level=logging.DEBUG)
         
-
         self.test = False
         self.test = True
         logging.debug('This is a Test : '+str(self.test))
@@ -34,9 +33,9 @@ class MainApp(App):
         self.masterkeys = {'login':['id','auth_token'],'pagesamount':['total_pages'],'totalindex':['items'],'addMovie':['src_free_sd','src_vip_sd','src_vip_hd','src_vip_hd_1080p'],'appendShow':['season_list'],'appendEpisodes':['episodes']}
         self.opt=['src_free_sd','src_vip_sd','src_vip_hd','src_vip_hd_1080p']
         self.quality=['480P','480P VIP','720P VIP','1080P VIP']
-        self.seasonqualitynames=['480P','720P','1080P']
         ##Set minimum execution times for different requests ##
         self.wait = {'login':0,'pagesamount':0,'totalindex':0,'moviepage':0,'showpage':0,'addMovie':0,'appendEpisodes':0,'appendShow':0}
+        
         ##Set active directery to location of script ##
         self._setCWD()
         self.s = requests.session()
@@ -113,8 +112,6 @@ class MainApp(App):
                 continue
             break
         return z
-    def parseURL(self,string):
-        return string.replace(' ','%')
     def respParse(self,data,master):#Ensure corect return
         parseddata = {}
         for i in self.masterkeys[master]:
@@ -254,6 +251,7 @@ class MainApp(App):
         if self.isEpisodeDown(id,season,ep):
             index = {}
             for i in range(len(self.tvindex[id][season][ep])):
+                print('############')
                 if len(self.tvindex[id][season][ep]) > 0:
                     index[self.quality[i]]=self.tvindex[id][season][ep][i]
             return index
@@ -263,46 +261,13 @@ class MainApp(App):
         index = self.tvindex if mse in 'se' else self.movieindex
         newindex = {}
         for i in index:
-            if index[i]['TITLE'][0].lower() == let.lower() or  index[i]['TITLE'][0].lower() not in 'abcdefghijklmnopqrstuvwxyz':
-                newindex[i] = index[i]['TITLE']
-        if len(newindex) >0:
-            return newindex
-        else:
-            print('ggggg')
-            return False
+            if index[i][0].lower() == let:
+                newindex[i] = index[i]
+        return newindex
     
-    def getqualitylist(self,id,season):
-        x = self.appendEpisodes(id,season)
-        sd =[]
-        hd = []
-        fhd = []
-        for i in x:
-            sdplace = None
-            hdplace = None
-            fhdplace = None
-            y = x[i]
-            y.reverse()
-            for o in range(len(y)):
-                if y[o] != None or len(str(y[o] )) > 1:
-                    if fhdplace == None:
-                        fhdplace = o
-                    if o > 1 and hdplace == None:
-                        hdplace = o
-                    if o > 2 and sdplace == None:
-                        sdplace = o
-                    if o > 3 and sdplace == None:
-                        sdplace = o
-            sd.append(y[sdplace])
-            hd.append(y[hdplace])
-            fhd.append(y[fhdplace])
-        return sd,hd,fhd
 
 
 
-
-
-    
-    
     def make_f(self,i,o):
         def f(self):
             i(*o)
@@ -384,20 +349,10 @@ class MainApp(App):
         self.dontgetlost.append([self.present,[but,mse]])
         self.wipe()
         self.addBack()
-        if mse == 'm':
+        if mse in 'm':
             let = {x[i]:[mse,i] for i in x}
 
             for i in self.buttoniter(self.moviepresent,let):
-                tempbutton = Button(text=i[1],
-                                size_hint=(.5, .5),
-                                pos_hint={'center_x': .5, 'center_y': .5})
-                tempbutton.bind(on_press=i[0])
-                self.layout.add_widget(tempbutton)
-                self.current_buttons.append(tempbutton)
-        if mse in 'es':
-            let = {x[i]:[mse,i] for i in x}
-
-            for i in self.buttoniter(self.seasonpresent,let):
                 tempbutton = Button(text=i[1],
                                 size_hint=(.5, .5),
                                 pos_hint={'center_x': .5, 'center_y': .5})
@@ -426,87 +381,6 @@ class MainApp(App):
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
-    def seasonpresent(self,mse,id):
-        self.dontgetlost.append([self.seasonpresent,[mse,id]])
-        self.wipe()
-        self.addBack()
-        x = self.appendShow(id)
-        x.reverse
-        #x = self.getMovieURL(id)
-        
-        x = {'Season ' + str(i):[mse,id,str(i)] for i in x}
-        if mse == 'e':
-            y  = self.buttoniter(self.episodepresent,x)
-        else:
-            y  = self.buttoniter(self.seasonquality,x)
-        
-
-        for i in y:
-            tempbutton = Button(text=i[1],
-                            size_hint=(.5, .5),
-                            pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
-            self.layout.add_widget(tempbutton)
-            self.current_buttons.append(tempbutton)
-        
-    def seasonquality(self,mse,id,season):
-        self.dontgetlost.append([self.seasonquality,[mse,id,season]])
-        self.wipe()
-        self.addBack()
-        
-        x = self.getqualitylist(id,season)
-        y = {}
-        for i in range(3):
-            y[self.seasonqualitynames[i]] = x[i]
-        let = {i:[y[i]] for i in y}
-        for i in self.buttoniter(self.downURL,let):
-            tempbutton = Button(text=i[1],
-                            size_hint=(.5, .5),
-                            pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
-            self.layout.add_widget(tempbutton)
-            self.current_buttons.append(tempbutton)
-
-
-    def episodepresent(self,mse,id,season):
-        self.dontgetlost.append([self.episodepresent,[mse,id,season]])
-        self.wipe()
-        self.addBack()
-        x = self.appendEpisodes(id,season)
-        let = {'Episode ' + str(i):[mse,id,season,i] for i in x}
-        for i in self.buttoniter(self.episodequality,let):
-            tempbutton = Button(text=i[1],
-                            size_hint=(.5, .5),
-                            pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
-            self.layout.add_widget(tempbutton)
-            self.current_buttons.append(tempbutton)
-    
-    
-    
-    def episodequality(self,mse,id,season,ep):
-        self.dontgetlost.append([self.episodequality,[mse,id,season,ep]])
-        self.wipe()
-        self.addBack()
-        x = self.getEpisodeURL(id,season,ep)
-        y = {}
-        for i in range(len(x)):
-            if x[i] == None or len(str(x[i])) < 1:
-                continue
-            else:
-                y[self.quality[i]] = x[i]
-        let = {i:[y[i]] for i in y}
-        for i in self.buttoniter(self.downURL,let):
-            tempbutton = Button(text=i[1],
-                            size_hint=(.5, .5),
-                            pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
-            self.layout.add_widget(tempbutton)
-            self.current_buttons.append(tempbutton)
-
-
-    
-    
     def downURL(self,url):
         print(url)
     
