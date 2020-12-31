@@ -636,6 +636,6 @@ class MainApp(App):
     def on_press_button(self, instance):
         self.layout.remove_widget(self.button)
 
-#if __name__ == '__main__':
-app = MainApp()
-app.run()
+if __name__ == '__main__':
+    app = MainApp()
+    app.run()
