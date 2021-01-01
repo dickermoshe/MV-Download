@@ -1,7 +1,7 @@
 
 from android.storage import primary_external_storage_path
 from android.permissions import request_permissions, Permission
-
+request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
 from kivy.uix.button import Button
@@ -608,7 +608,12 @@ class MainApp(App):
         self.newbuttons=[] 
     def key_input(self, window, key, scancode, codepoint, modifier):
         if key == 27:
-           return True  # override the default behaviour
+            try:
+                self.gorightback()
+            except:
+                self.dontgetlost = []
+                self.main_screen()
+            return True  # override the default behaviour
         else:           # the key now does nothing
            return False
 
@@ -628,7 +633,10 @@ class MainApp(App):
 
     def on_press_button(self, instance):
         self.layout.remove_widget(self.button)
-
+    
+    def on_pause(self):
+        return True
+    
 if __name__ == '__main__':
     app = MainApp()
     app.run()
