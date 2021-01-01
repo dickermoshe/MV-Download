@@ -1,7 +1,6 @@
 
 from android.storage import primary_external_storage_path
 from android.permissions import request_permissions, Permission, check_permission
-request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
 from kivy.uix.button import Button
@@ -21,7 +20,10 @@ from threading import Thread
 class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
-        request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+        if check_permission('android.permission.READ_EXTERNAL_STORAGE') == False:
+            request_permissions([Permission.READ_EXTERNAL_STORAGE])
+        if check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False:
+            request_permissions([Permission.WRITE_EXTERNAL_STORAGE])
         self.test = False
         #self.test = True
         ##URLs for indexing Movies and TV##
