@@ -50,6 +50,10 @@ class MainApp(App):
         self.movieindex, self.tvindex = self.getindex()
 
     def getindex(self):
+        while True:
+             if check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False or check_permission('android.permission.READ_EXTERNAL_STORAGE') ==False:
+                  time.sleep(.5)
+                  continue
         filename = 'pickled.bin'
         response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
         with open(filename, 'wb') as f:
@@ -622,10 +626,10 @@ class MainApp(App):
         Window.bind(on_keyboard=self.key_input)
         self.dontgetlost = []
         self.current_buttons = None
-        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
+        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=Window.height/10)
         self.layout.bind(minimum_height=self.layout.setter("height"))
         
-        Window.size = (500, 500)
+        #Window.size = (500, 500)
         self.root = ScrollView(size_hint_x=1 , size=(Window.width, Window.height))
         self.root.add_widget(self.layout)
         self.main_screen()
