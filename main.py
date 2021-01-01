@@ -1,6 +1,6 @@
 
 from android.storage import primary_external_storage_path
-from android.permissions import request_permissions, Permission
+from android.permissions import request_permissions, Permission, check_permission
 request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
