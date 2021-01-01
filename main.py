@@ -1,5 +1,6 @@
 
 from android.storage import primary_external_storage_path
+from android.permissions import request_permissions, Permission
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
@@ -20,8 +21,7 @@ from threading import Thread
 class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
-        
-
+        request_permissions([Permission.WRITE_EXTERNAL_STORAGE])
         self.test = False
         #self.test = True
         ##URLs for indexing Movies and TV##
@@ -606,11 +606,15 @@ class MainApp(App):
         
         #always have back buttons
         self.newbuttons=[] 
-
-
+    def key_input(self, window, key, scancode, codepoint, modifier):
+        if key == 27:
+           return True  # override the default behaviour
+        else:           # the key now does nothing
+           return False
 
 
     def build(self):
+        Window.bind(on_keyboard=self.key_input)
         self.dontgetlost = []
         self.current_buttons = None
         self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
