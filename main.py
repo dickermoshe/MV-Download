@@ -21,7 +21,7 @@ from threading import Thread
 class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
-        request_permissions([Permission.WRITE_EXTERNAL_STORAGE])
+        request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
         self.test = False
         #self.test = True
         ##URLs for indexing Movies and TV##
