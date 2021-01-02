@@ -22,8 +22,7 @@ from kivy.uix.label import Label
 from threading import Thread
 
 class MainApp(App):
-    def __init__(self, **kwargs):
-        super(MainApp, self).__init__(**kwargs)
+    def setupvar(self):
         if platform == "android":
             # Logger.info('Android detected! requesting permition')
             self.request_android_permissions()
@@ -647,6 +646,7 @@ class MainApp(App):
     def build(self):
         if platform == 'android':
             self.request_android_permissions()
+        self.setupvar()
         self.dontgetlost = []
         self.current_buttons = None
         self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
