@@ -1,4 +1,7 @@
-
+from kivy.utils import platform
+if platform == 'android':
+    from android.storage import primary_external_storage_path
+    from android.permissions import request_permissions, Permission, check_permission
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.app import App
@@ -19,8 +22,7 @@ from kivy.uix.label import Label
 from threading import Thread
 
 class MainApp(App):
-    def __init__(self, **kwargs):
-        super(MainApp, self).__init__(**kwargs)
+    def on_start(self):
         logging.basicConfig(level=logging.DEBUG)
         
 
@@ -69,8 +71,12 @@ class MainApp(App):
         #return x[0],x[1]
 
     def _setCWD(self):#Set CWD to Script Location
-        os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
-        logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
+        if platform == 'android':
+            os.chdir(primary_external_storage_path())
+        else:
+            
+            os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
+            logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
     def login(self):#Login
 
         data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
