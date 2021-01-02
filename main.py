@@ -650,10 +650,8 @@ class MainApp(App):
         self.setupvar()
         self.dontgetlost = []
         self.current_buttons = None
-        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
+        self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=Window.height/10)
         self.layout.bind(minimum_height=self.layout.setter("height"))
-        
-        Window.size = (500, 500)
         self.root = ScrollView(size_hint_x=1 , size=(Window.width, Window.height))
         self.root.add_widget(self.layout)
         self.main_screen()
