@@ -24,9 +24,6 @@ from threading import Thread
 class MainApp(App):
     
     def setupvar(self):
-        if platform == "android":
-            # Logger.info('Android detected! requesting permition')
-            self.request_android_permissions()
         logging.basicConfig(level=logging.DEBUG)
         
 
@@ -645,8 +642,6 @@ class MainApp(App):
 
 
     def build(self):
-        if platform == 'android':
-            self.request_android_permissions()
         self.setupvar()
         self.dontgetlost = []
         self.current_buttons = None
@@ -663,5 +658,6 @@ class MainApp(App):
         
 if __name__ == '__main__':
     app = MainApp()
-    app.request_android_permissions()
+    if platform == 'android' 
+       app.request_android_permissions()
     app.run()
