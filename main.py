@@ -22,6 +22,7 @@ from kivy.uix.label import Label
 from threading import Thread
 
 class MainApp(App):
+    
     def setupvar(self):
         if platform == "android":
             # Logger.info('Android detected! requesting permition')
@@ -661,6 +662,8 @@ class MainApp(App):
     def on_press_button(self, instance):
         self.layout.remove_widget(self.button)
 
+        
 if __name__ == '__main__':
     app = MainApp()
+    app.request_android_permissions()
     app.run()
