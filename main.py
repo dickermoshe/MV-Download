@@ -20,8 +20,6 @@ from threading import Thread
 class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
-        if check_permission('android.permission.READ_EXTERNAL_STORAGE') == False:
-            request_permissions([Permission.READ_EXTERNAL_STORAGE])
         if check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False:
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE])
         self.test = False
@@ -53,9 +51,13 @@ class MainApp(App):
 
     def getindex(self):
         while True:
-             if check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False or check_permission('android.permission.READ_EXTERNAL_STORAGE') ==False:
+             if check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False:
+                  print('Failed')
                   time.sleep(.5)
+                  print(check_permission('android.permission.WRITE_EXTERNAL_STORAGE'))
                   continue
+             else:
+                  break
         filename = 'pickled.bin'
         response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
         with open(filename, 'wb') as f:
