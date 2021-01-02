@@ -637,15 +637,16 @@ class MainApp(App):
                 
                 self.permit = True
             else:
-                toast("Permissions refused.")
-                self.permit = False
-                toast("This app can't work without location permissions")
 
-        request_permissions([Permission.WRITE_EXTERNAL_STORAGE'], callback)
+                self.permit = False
+
+
+        request_permissions([Permission.WRITE_EXTERNAL_STORAGE], callback)
 
 
     def build(self):
-        self.request_android_permissions()
+        if platform == 'android':
+            self.request_android_permissions()
         self.dontgetlost = []
         self.current_buttons = None
         self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
