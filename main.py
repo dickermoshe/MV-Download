@@ -22,7 +22,11 @@ from kivy.uix.label import Label
 from threading import Thread
 
 class MainApp(App):
-    def on_start(self):
+    def __init__(self, **kwargs):
+        super(MainApp, self).__init__(**kwargs)
+        if platform == "android":
+            # Logger.info('Android detected! requesting permition')
+            self.request_android_permissions()
         logging.basicConfig(level=logging.DEBUG)
         
 
@@ -625,9 +629,23 @@ class MainApp(App):
         self.newbuttons=[] 
 
 
+    def request_android_permissions(self):
+
+        def callback(permissions, results):
+
+            if all([res for res in results]):
+                
+                self.permit = True
+            else:
+                toast("Permissions refused.")
+                self.permit = False
+                toast("This app can't work without location permissions")
+
+        request_permissions([Permission.WRITE_EXTERNAL_STORAGE'], callback)
 
 
     def build(self):
+        self.request_android_permissions()
         self.dontgetlost = []
         self.current_buttons = None
         self.layout = GridLayout(cols=2, size_hint_y=None,row_force_default=True, row_default_height=40)
