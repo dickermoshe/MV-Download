@@ -1,3 +1,4 @@
+from kivy.effects.scroll import ScrollEffect
 from kivy.utils import platform
 if platform == 'android':
     from android.storage import primary_external_storage_path
@@ -56,6 +57,8 @@ class MainApp(App):
         
         self.movieindex, self.tvindex = self.getindex()
         logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+
+
     def getindex(self):
         filename = 'pickled.bin'
         response = requests.get('http://15.188.77.209/pickled.bin', stream=True)
@@ -332,6 +335,7 @@ class MainApp(App):
 
 
     def main_screen(self):
+        
         self.wipe()
         commands = {'Download Movies':['m'],'TV Shows : Season':['s'],'TV Shows : Episodes':['e']}
 
@@ -341,15 +345,18 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press= i[0])
+            tempbutton.bind(on_release= i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
-    
+
     def gorightback(self):
         self.wipe()
         print('BEter',self.dontgetlost)
-        if len(self.dontgetlost) == 1:
-            del self.dontgetlost[-1]
+        if len(self.dontgetlost) <2:
+            try:
+                del self.dontgetlost[-1]
+            except:
+                pass
             self.main_screen()
         else:
             x = self.dontgetlost[-2]
@@ -369,7 +376,7 @@ class MainApp(App):
         tempbutton = Button(text='Back',
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-        tempbutton.bind(on_press=lambda widget: self.gorightback())    
+        tempbutton.bind(on_release=lambda widget: self.gorightback())    
         self.layout.add_widget(tempbutton)
         self.current_buttons.append(tempbutton)
     
@@ -384,7 +391,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
@@ -403,7 +410,7 @@ class MainApp(App):
                 tempbutton = Button(text=i[1],
                                 size_hint=(.5, .5),
                                 pos_hint={'center_x': .5, 'center_y': .5})
-                tempbutton.bind(on_press=i[0])
+                tempbutton.bind(on_release=i[0])
                 self.layout.add_widget(tempbutton)
                 self.current_buttons.append(tempbutton)
         if mse in 'es':
@@ -413,7 +420,7 @@ class MainApp(App):
                 tempbutton = Button(text=i[1],
                                 size_hint=(.5, .5),
                                 pos_hint={'center_x': .5, 'center_y': .5})
-                tempbutton.bind(on_press=i[0])
+                tempbutton.bind(on_release=i[0])
                 self.layout.add_widget(tempbutton)
                 self.current_buttons.append(tempbutton)
     
@@ -434,7 +441,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
@@ -457,7 +464,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
         
@@ -475,7 +482,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
@@ -490,7 +497,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
     
@@ -512,7 +519,7 @@ class MainApp(App):
             tempbutton = Button(text=i[1],
                             size_hint=(.5, .5),
                             pos_hint={'center_x': .5, 'center_y': .5})
-            tempbutton.bind(on_press=i[0])
+            tempbutton.bind(on_release=i[0])
             self.layout.add_widget(tempbutton)
             self.current_buttons.append(tempbutton)
 
@@ -639,9 +646,33 @@ class MainApp(App):
         request_permissions([Permission.WRITE_EXTERNAL_STORAGE], callback)
         while self.permit != True:
             time.sleep(.5)
+    def key_input(self, window, key, scancode, codepoint, modifier):
+        
+        if key == 27:
+            return True  # override the default behaviour
+        else:           # the key now does nothing
+            if key == 4:
+                self.gorightback()
+            if key in [6,26]:
+                sys.exit()
+            if key ==15 :
+                self.dec()
+            if key == 9:
+                self.inc()
+            return False
+
+    def inc(self):
+        if self.root.scroll_y < 1:
+            self.root.scroll_y += self.root.convert_distance_to_scroll(0, 20)[1]
+    def dec(self):
+        if self.root.scroll_y > 0:
+            self.root.scroll_y -= self.root.convert_distance_to_scroll(0, 20)[1]
+
+
 
 
     def build(self):
+        Window.bind(on_keyboard=self.key_input)
         self.permit = False
         if platform == 'android' :
             self.request_android_permissions()
@@ -653,10 +684,13 @@ class MainApp(App):
         self.root = ScrollView(size_hint_x=1 , size=(Window.width, Window.height))
         self.root.add_widget(self.layout)
         self.main_screen()
-        return self.root
+        self.layout
 
-    def on_press_button(self, instance):
-        self.layout.remove_widget(self.button)
+        return self.root
+    def on_pause(self):
+        return True
+    def on_resume(self):
+        pass
 
         
 if __name__ == '__main__':
