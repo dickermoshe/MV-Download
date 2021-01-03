@@ -28,7 +28,7 @@ class MainApp(App):
         
 
         self.test = False
-        self.test = True
+        #self.test = True
         logging.debug('This is a Test : '+str(self.test))
         ##URLs for indexing Movies and TV##
         self.indexMovieURL = 'https://mobilevids.org/webapi/videos/movies.php'
@@ -636,12 +636,15 @@ class MainApp(App):
             else:
 
                 self.permit = False
-
-
         request_permissions([Permission.WRITE_EXTERNAL_STORAGE], callback)
+        while self.permit != True:
+            time.sleep(.5)
 
 
     def build(self):
+        self.permit = False
+        if platform == 'android' :
+            self.request_android_permissions()
         self.setupvar()
         self.dontgetlost = []
         self.current_buttons = None
@@ -658,6 +661,4 @@ class MainApp(App):
         
 if __name__ == '__main__':
     app = MainApp()
-    if platform == 'android' 
-       app.request_android_permissions()
     app.run()
