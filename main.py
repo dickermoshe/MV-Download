@@ -10,7 +10,6 @@ class mvids():
     
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG)
-        
         self.test = False
         self.test = True
         logging.debug('This is a Test : '+str(self.test))
@@ -22,7 +21,7 @@ class mvids():
         self.indexTvURL = 'https://mobilevids.org/webapi/videos/tvshows.php'
         self.loginURL = 'https://mobilevids.org/webapi/user/login.php'
         self.username = 'mickrich345@gmail.com'
-        self.code = "7897412563"
+        self.code = "7897412563+"
         self.masterkeys = {'login':['id','auth_token'],'pagesamount':['total_pages'],'totalindex':['items'],'addMovie':['src_free_sd','src_vip_sd','src_vip_hd','src_vip_hd_1080p'],'appendShow':['season_list'],'appendEpisodes':['episodes']}
         self.opt=['src_free_sd','src_vip_sd','src_vip_hd','src_vip_hd_1080p']
         ##Set minimum execution times for different requests ##
@@ -40,9 +39,11 @@ class mvids():
         logging.debug(f"There are {self.pagenum['m']} pages of movies\nThere are {self.pagenum['t']} pages of TV Shows")
         self.movieindex, self.tvindex = self.totalindex('m'),self.totalindex('t')
         logging.debug(f"Pulled {len(self.movieindex)} movies and {len(self.tvindex)} TV Shows.")
+    
     def _setCWD(self):#Set CWD to Script Location
         os.chdir(os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0])
         logging.debug(f'Set {os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]} as CWD')
+    
     def login(self):#Login
 
         data = {'data': '{"Name":"'+self.username+'","Password":"'+self.code+'"}'}
